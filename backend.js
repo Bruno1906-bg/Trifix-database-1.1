@@ -7,23 +7,21 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Conexión a MySQL/MariaDB
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '', // ← pon tu contraseña si la tienes
+  password: '', 
   database: 'trifix_db'
 });
 
 db.connect((err) => {
   if (err) {
-    console.error('❌ Error al conectar a MySQL:', err.message);
+    console.error('Error al conectar a MySQL:', err.message);
   } else {
-    console.log('✅ Conexión exitosa a la base de datos trifix_db');
+    console.log('Conexión exitosa a la base de datos trifix_db');
   }
 });
 
-// CREATE: registrar usuario
 app.post('/api/register', (req, res) => {
   const { nombre, correo, contraseña } = req.body;
 
@@ -40,7 +38,7 @@ app.post('/api/register', (req, res) => {
       if (err.code === 'ER_DUP_ENTRY') {
         return res.status(409).send('El correo ya está registrado');
       }
-      console.error('❌ Error al registrar usuario:', err.message);
+      console.error('Error al registrar usuario:', err.message);
       return res.status(500).send('Error interno al registrar usuario');
     }
 
@@ -48,7 +46,6 @@ app.post('/api/register', (req, res) => {
   });
 });
 
-// READ: obtener usuario por correo
 app.get('/api/user', (req, res) => {
   const { correo } = req.query;
   if (!correo) return res.status(400).send('Falta el correo');
@@ -56,7 +53,7 @@ app.get('/api/user', (req, res) => {
   const query = 'SELECT id, nombre, correo, fecha_registro FROM usuarios WHERE correo = ? LIMIT 1';
   db.query(query, [correo], (err, results) => {
     if (err) {
-      console.error('❌ Error al obtener usuario:', err.message);
+      console.error('Error al obtener usuario:', err.message);
       return res.status(500).send('Error interno al obtener usuario');
     }
     if (results.length === 0) return res.status(404).send('Usuario no encontrado');
@@ -64,7 +61,6 @@ app.get('/api/user', (req, res) => {
   });
 });
 
-// UPDATE: modificar nombre y correo
 app.put('/api/user', (req, res) => {
   const { correoOriginal, nombreNuevo, correoNuevo } = req.body;
   if (!correoOriginal || !nombreNuevo || !correoNuevo) {
@@ -74,7 +70,7 @@ app.put('/api/user', (req, res) => {
   const query = 'UPDATE usuarios SET nombre = ?, correo = ? WHERE correo = ?';
   db.query(query, [nombreNuevo, correoNuevo, correoOriginal], (err, result) => {
     if (err) {
-      console.error('❌ Error al actualizar usuario:', err.message);
+      console.error('Error al actualizar usuario:', err.message);
       return res.status(500).send('Error al actualizar usuario');
     }
     if (result.affectedRows === 0) {
@@ -84,7 +80,6 @@ app.put('/api/user', (req, res) => {
   });
 });
 
-// DELETE: eliminar usuario por correo
 app.post('/api/delete-user', (req, res) => {
   const { correo } = req.body;
   if (!correo) return res.status(400).send('Falta el correo para eliminar');
@@ -92,7 +87,7 @@ app.post('/api/delete-user', (req, res) => {
   const query = 'DELETE FROM usuarios WHERE correo = ?';
   db.query(query, [correo], (err, result) => {
     if (err) {
-      console.error('❌ Error al eliminar usuario:', err.message);
+      console.error('Error al eliminar usuario:', err.message);
       return res.status(500).send('Error al eliminar usuario');
     }
     if (result.affectedRows === 0) {
@@ -102,11 +97,10 @@ app.post('/api/delete-user', (req, res) => {
   });
 });
 
-// Ruta raíz opcional
 app.get('/', (req, res) => {
   res.send('Servidor API TriFix funcionando correctamente');
 });
 
 app.listen(4000, () => {
-  console.log('🚀 Servidor corriendo en http://localhost:4000');
+  console.log('Servidor corriendo en http://localhost:4000');
 });
